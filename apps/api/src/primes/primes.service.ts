@@ -24,7 +24,14 @@ export class PrimesService {
   }
 
   async create(dto: CreatePrimeDto, agenceId: string) {
-    return this.prisma.prime.create({ data: { ...dto, agenceId } });
+    const data = {
+      ...dto,
+      numeroPolice: dto.numeroPolice || undefined,
+      dateEffet: dto.dateEffet || undefined,
+      dateEcheance: dto.dateEcheance || undefined,
+      agenceId,
+    };
+    return this.prisma.prime.create({ data });
   }
 
   async annuler(id: string, agenceId: string) {

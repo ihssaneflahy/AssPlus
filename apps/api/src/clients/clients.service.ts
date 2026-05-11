@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { CreateClientDto } from './dto/create-client.dto';
 
@@ -25,14 +25,25 @@ export class ClientsService {
 
   async create(dto: CreateClientDto, agenceId: string) {
     const { contacts, ...clientData } = dto;
-    return this.prisma.client.create({
-      data: {
-        ...clientData,
-        agenceId,
-        contacts: { create: contacts ?? [] },
-      },
-      include: { contacts: true },
-    });
+    // Convert empty strings to undefined so Prisma stores NULL (avoids unique constraint collisions)
+    const sanitized = {
+      ...clientData,
+      cin: clientData.cin || undefined,
+      ice: clientData.ice || undefined,
+      dateNaissance: clientData.dateNaissance || undefined,
+    };
+    try {
+      return await this.prisma.client.create({
+        data: { ...sanitized, agenceId, contacts: { create: contacts ?? [] } },
+        include: { contacts: true },
+      });
+    } catch (e: any) {
+      if (e.code === 'P2002') {
+        const field = e.meta?.target?.includes('cin') ? 'CIN' : 'ICE';
+        throw new ConflictException(`Un client avec ce ${field} existe déjà`);
+      }
+      throw e;
+    }
   }
 
   async update(id: string, dto: Partial<CreateClientDto>, agenceId: string) {

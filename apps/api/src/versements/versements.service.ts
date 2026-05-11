@@ -25,7 +25,12 @@ export class VersementsService {
 
   async create(dto: CreateVersementDto, agenceId: string, userId: string) {
     return this.prisma.versementBanque.create({
-      data: { ...dto, agenceId, creeParId: userId },
+      data: {
+        ...dto,
+        montantEspece: dto.montantEspece || undefined,
+        agenceId,
+        creeParId: userId,
+      },
     });
   }
 

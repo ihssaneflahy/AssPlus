@@ -7,7 +7,12 @@
     "baseUrl": "./",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "incremental": true
+    "incremental": true,
+    "strictPropertyInitialization": false,
+    "paths": {
+      "@assplus/database": ["../../packages/database/generated/client"],
+      "@assplus/shared": ["../../packages/shared/src"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "test"]

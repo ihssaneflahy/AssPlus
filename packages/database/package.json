@@ -2,6 +2,14 @@
   "name": "@assplus/database",
   "version": "0.1.0",
   "private": true,
+  "main": "./generated/client/index.js",
+  "types": "./generated/client/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./generated/client/index.js",
+      "types": "./generated/client/index.d.ts"
+    }
+  },
   "scripts": {
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",

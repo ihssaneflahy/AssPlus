@@ -14,7 +14,8 @@ import { UsersModule } from '../users/users.module';
     UsersModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: (config: ConfigService) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      useFactory: (config: ConfigService): any => ({
         secret: config.get<string>('JWT_SECRET'),
         signOptions: { expiresIn: config.get<string>('JWT_ACCESS_EXPIRES_IN', '15m') },
       }),

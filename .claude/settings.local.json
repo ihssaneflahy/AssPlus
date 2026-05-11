@@ -19,7 +19,32 @@
       "Bash(git init *)",
       "Bash(git config *)",
       "Bash(git checkout *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Read(//tmp/**)",
+      "Bash(jobs)",
+      "Bash(git remote *)",
+      "Bash(git push *)",
+      "Bash(docker --version)",
+      "Bash(docker compose *)",
+      "Bash(npm install *)",
+      "Bash(npx prisma *)",
+      "Bash(export PATH=\"/c/Program Files/PostgreSQL/16/bin:/c/Program Files/nodejs:$PATH\")",
+      "Bash(pg_ctl status *)",
+      "Bash(cmd /c \"sc query postgresql-x64-16\")",
+      "Bash(export PATH=\"/c/Program Files/PostgreSQL/16/bin:$PATH\")",
+      "Bash(pg_ctl start *)",
+      "Bash(PGPASSWORD=postgres psql -U postgres -c \"\\\\l\")",
+      "Bash(grep -v \"^$\")",
+      "Bash(initdb -D \"/c/Users/Ihssan.FLAHY/postgresql/data\" -U postgres -A scram-sha-256 --pwfile=/tmp/pgpass.txt --encoding=UTF8)",
+      "Bash(pg_ctl -D \"/c/Users/Ihssan.FLAHY/postgresql/data\" -l \"/c/Users/Ihssan.FLAHY/postgresql/postgres.log\" start)",
+      "Bash(pg_ctl -D \"/c/Users/Ihssan.FLAHY/postgresql/data\" status)",
+      "Bash(PGPASSWORD=assplus_dev psql -U postgres -c \"CREATE USER assplus WITH PASSWORD 'assplus_dev';\")",
+      "Bash(PGPASSWORD=assplus_dev psql -U postgres -c \"CREATE DATABASE assplus_db OWNER assplus ENCODING 'UTF8';\")",
+      "Bash(PGPASSWORD=assplus_dev psql -U postgres -c \"GRANT ALL PRIVILEGES ON DATABASE assplus_db TO assplus;\")",
+      "Bash(PGPASSWORD=assplus_dev psql -U postgres -c \"ALTER USER assplus CREATEDB;\")",
+      "Bash(npx ts-node *)",
+      "Bash(npx tsc *)"
     ]
   }
 }

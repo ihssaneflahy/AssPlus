@@ -30,7 +30,14 @@ export class UsersService {
 
     const passwordHash = await bcrypt.hash(dto.password, 12);
     return this.prisma.user.create({
-      data: { ...dto, password: undefined, passwordHash, agenceId },
+      data: {
+        nomComplet: dto.nomComplet,
+        email: dto.email,
+        login: dto.login,
+        role: dto.role,
+        passwordHash,
+        agenceId,
+      },
       select: { id: true, nomComplet: true, email: true, login: true, role: true, actif: true },
     });
   }

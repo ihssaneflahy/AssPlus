@@ -26,10 +26,12 @@ export class AuthService {
     const payload = { sub: user.id, login: user.login, role: user.role, agenceId: user.agenceId };
 
     const accessToken = this.jwtService.sign(payload);
-    const refreshToken = this.jwtService.sign(payload, {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const jwtOpts: any = {
       secret: this.config.get<string>('JWT_SECRET'),
       expiresIn: this.config.get<string>('JWT_REFRESH_EXPIRES_IN', '7d'),
-    });
+    };
+    const refreshToken = this.jwtService.sign(payload, jwtOpts);
 
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);

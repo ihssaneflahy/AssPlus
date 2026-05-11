@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git --version)",
+      "Bash(npm --version)",
+      "Bash(winget --version)",
+      "Bash(winget install *)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "WebFetch(domain:api.github.com)",
+      "Bash(cmd /c \"where node\")",
+      "Bash(cmd /c \"gh auth status\")",
+      "Read(//c/Program Files/nodejs//**)",
+      "Read(//c/Program Files \\(x86\\)/**)",
+      "Read(//c/Program Files/**)",
+      "Bash(export PATH=\"/c/Program Files/nodejs:$PATH\")",
+      "Bash(gh auth *)",
+      "Bash(export PATH=\"/c/Program Files/GitHub CLI:/c/Program Files/nodejs:$PATH\")",
+      "Bash(gh --version)",
+      "Bash(git init *)",
+      "Bash(git config *)",
+      "Bash(git checkout *)",
+      "Bash(git add *)"
+    ]
+  }
+}

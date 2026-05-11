@@ -1,0 +1,298 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// ÉNUMÉRATIONS
+// ─────────────────────────────────────────────
+
+enum TypeContact {
+  EMAIL
+  TELEPHONE
+  ADRESSE
+}
+
+enum TypeClient {
+  PERSONNE_PHYSIQUE
+  ENTREPRISE
+}
+
+enum RoleUser {
+  SUPER_ADMIN
+  ADMIN_AGENCE
+  GESTIONNAIRE
+  LECTEUR
+}
+
+enum TypeEmission {
+  AFFAIRE_NOUVELLE
+  RENOUVELLEMENT
+  AVENANT_DE_PERCEPTION
+  AVENANT_DE_RISTOURNE
+  RESILIATION
+  ANNULATION
+}
+
+enum StatutPrime {
+  EMISE
+  ANNULEE
+}
+
+enum TypeDetailEncaissement {
+  CHEQUE
+  ESPECE
+  VIREMENT
+  REPORT
+}
+
+enum StatutDetailEncaissement {
+  EN_ATTENTE
+  ENCAISSE
+  RETOURNE_IMPAYE
+}
+
+enum StatutEncaissement {
+  EN_COURS
+  VALIDE
+  ANNULE
+}
+
+enum StatutVersement {
+  BROUILLON
+  VALIDE
+  VIRE
+}
+
+// ─────────────────────────────────────────────
+// AGENCE
+// ─────────────────────────────────────────────
+
+model Agence {
+  id            String   @id @default(cuid())
+  codeCompagnie String   @unique @map("code_compagnie")
+  codeSecteur   String   @map("code_secteur")
+  nom           String
+  responsable   String
+  actif         Boolean  @default(true)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  contacts  ContactAgence[]
+  ribs      RibAgence[]
+  users     User[]
+  clients   Client[]
+  primes    Prime[]
+  encaissements   Encaissement[]
+  versements      VersementBanque[]
+
+  @@map("agences")
+}
+
+model ContactAgence {
+  id           String      @id @default(cuid())
+  typeContact  TypeContact @map("type_contact")
+  valeur       String
+  agenceId     String      @map("agence_id")
+  agence       Agence      @relation(fields: [agenceId], references: [id], onDelete: Cascade)
+
+  @@map("contacts_agence")
+}
+
+model RibAgence {
+  id       String @id @default(cuid())
+  banque   String
+  rib      String
+  agenceId String @map("agence_id")
+  agence   Agence @relation(fields: [agenceId], references: [id], onDelete: Cascade)
+
+  @@map("ribs_agence")
+}
+
+// ─────────────────────────────────────────────
+// USERS
+// ─────────────────────────────────────────────
+
+model User {
+  id                  String    @id @default(cuid())
+  nomComplet          String    @map("nom_complet")
+  email               String    @unique
+  login               String    @unique
+  passwordHash        String    @map("password_hash")
+  role                RoleUser  @default(GESTIONNAIRE)
+  actif               Boolean   @default(true)
+  derniereConnexion   DateTime? @map("derniere_connexion")
+  agenceId            String?   @map("agence_id")
+  agence              Agence?   @relation(fields: [agenceId], references: [id])
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  encaissements   Encaissement[]   @relation("SaisiePar")
+  versements      VersementBanque[] @relation("CreePar")
+  refreshTokens   RefreshToken[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("refresh_tokens")
+}
+
+// ─────────────────────────────────────────────
+// CLIENT
+// ─────────────────────────────────────────────
+
+model Client {
+  id            String      @id @default(cuid())
+  typeClient    TypeClient  @map("type_client")
+  cin           String?
+  ice           String?
+  nomComplet    String      @map("nom_complet")
+  dateNaissance DateTime?   @map("date_naissance")
+  agenceId      String      @map("agence_id")
+  agence        Agence      @relation(fields: [agenceId], references: [id])
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  contacts      ContactClient[]
+  primes        Prime[]
+  encaissements Encaissement[]
+
+  @@unique([cin, agenceId])
+  @@unique([ice, agenceId])
+  @@map("clients")
+}
+
+model ContactClient {
+  id          String      @id @default(cuid())
+  typeContact TypeContact @map("type_contact")
+  valeur      String
+  clientId    String      @map("client_id")
+  client      Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@map("contacts_client")
+}
+
+// ─────────────────────────────────────────────
+// PRIME
+// ─────────────────────────────────────────────
+
+model Prime {
+  id              String       @id @default(cuid())
+  numeroPolice    String?      @map("numero_police")
+  dateEmission    DateTime     @map("date_emission")
+  dateEffet       DateTime?    @map("date_effet")
+  dateEcheance    DateTime?    @map("date_echeance")
+  typeEmission    TypeEmission @map("type_emission")
+  resumeVente     Json?        @map("resume_vente")
+  montantTtc      Decimal      @map("montant_ttc") @db.Decimal(15, 2)
+  montantNet      Decimal      @map("montant_net") @db.Decimal(15, 2)
+  commissionBrute Decimal      @map("commission_brute") @db.Decimal(15, 2)
+  commissionNet   Decimal      @map("commission_net") @db.Decimal(15, 2)
+  statut          StatutPrime  @default(EMISE)
+  dateStatut      DateTime     @default(now()) @map("date_statut")
+  clientId        String       @map("client_id")
+  client          Client       @relation(fields: [clientId], references: [id])
+  agenceId        String       @map("agence_id")
+  agence          Agence       @relation(fields: [agenceId], references: [id])
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  lignesEncaissement LigneEncaissementPrime[]
+
+  @@map("primes")
+}
+
+// ─────────────────────────────────────────────
+// ENCAISSEMENT
+// ─────────────────────────────────────────────
+
+model Encaissement {
+  id           String             @id @default(cuid())
+  dateSaisie   DateTime           @default(now()) @map("date_saisie")
+  montantTotal Decimal            @map("montant_total") @db.Decimal(15, 2)
+  statut       StatutEncaissement @default(EN_COURS)
+  dateStatut   DateTime           @default(now()) @map("date_statut")
+  clientId     String             @map("client_id")
+  client       Client             @relation(fields: [clientId], references: [id])
+  agenceId     String             @map("agence_id")
+  agence       Agence             @relation(fields: [agenceId], references: [id])
+  saisiParId   String             @map("saisi_par_id")
+  saisiPar     User               @relation("SaisiePar", fields: [saisiParId], references: [id])
+  createdAt    DateTime           @default(now()) @map("created_at")
+  updatedAt    DateTime           @updatedAt @map("updated_at")
+
+  details                DetailEncaissement[]
+  lignesPrimes           LigneEncaissementPrime[]
+
+  @@map("encaissements")
+}
+
+// Table de liaison Encaissement <-> Prime (un encaissement peut couvrir plusieurs primes)
+model LigneEncaissementPrime {
+  id             String       @id @default(cuid())
+  montantAffecte Decimal      @map("montant_affecte") @db.Decimal(15, 2)
+  encaissementId String       @map("encaissement_id")
+  encaissement   Encaissement @relation(fields: [encaissementId], references: [id], onDelete: Cascade)
+  primeId        String       @map("prime_id")
+  prime          Prime        @relation(fields: [primeId], references: [id])
+
+  @@unique([encaissementId, primeId])
+  @@map("lignes_encaissement_prime")
+}
+
+model DetailEncaissement {
+  id              String                    @id @default(cuid())
+  type            TypeDetailEncaissement
+  montant         Decimal                   @db.Decimal(15, 2)
+  numCheque       String?                   @map("num_cheque")
+  dateVersement   DateTime?                 @map("date_versement")
+  numVirement     String?                   @map("num_virement")
+  statut          StatutDetailEncaissement  @default(EN_ATTENTE)
+  dateStatut      DateTime                  @default(now()) @map("date_statut")
+  encaissementId  String                    @map("encaissement_id")
+  encaissement    Encaissement              @relation(fields: [encaissementId], references: [id], onDelete: Cascade)
+  versementId     String?                   @map("versement_id")
+  versement       VersementBanque?          @relation(fields: [versementId], references: [id])
+  createdAt       DateTime                  @default(now()) @map("created_at")
+  updatedAt       DateTime                  @updatedAt @map("updated_at")
+
+  @@map("details_encaissement")
+}
+
+// ─────────────────────────────────────────────
+// VERSEMENT BANQUE
+// ─────────────────────────────────────────────
+
+model VersementBanque {
+  id             String          @id @default(cuid())
+  dateVersement  DateTime        @map("date_versement")
+  nomBanque      String          @map("nom_banque")
+  compteBanque   String          @map("compte_banque")
+  montantTotal   Decimal         @map("montant_total") @db.Decimal(15, 2)
+  montantEspece  Decimal?        @map("montant_espece") @db.Decimal(15, 2)
+  statut         StatutVersement @default(BROUILLON)
+  dateStatut     DateTime        @default(now()) @map("date_statut")
+  agenceId       String          @map("agence_id")
+  agence         Agence          @relation(fields: [agenceId], references: [id])
+  creeParId      String          @map("cree_par_id")
+  creePar        User            @relation("CreePar", fields: [creeParId], references: [id])
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  details        DetailEncaissement[]
+
+  @@map("versements_banque")
+}

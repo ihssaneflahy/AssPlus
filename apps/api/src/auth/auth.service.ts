@@ -22,7 +22,7 @@ export class AuthService {
     return user;
   }
 
-  async login(user: { id: string; login: string; role: string; agenceId: string | null }) {
+  async login(user: { id: string; login: string; nomComplet: string; email: string | null; role: string; agenceId: string | null }) {
     const payload = { sub: user.id, login: user.login, role: user.role, agenceId: user.agenceId };
 
     const accessToken = this.jwtService.sign(payload);
@@ -40,7 +40,20 @@ export class AuthService {
       data: { token: refreshToken, userId: user.id, expiresAt },
     });
 
-    return { accessToken, refreshToken };
+    await this.usersService.updateLastLogin(user.id);
+
+    return {
+      accessToken,
+      refreshToken,
+      user: {
+        id: user.id,
+        login: user.login,
+        nomComplet: user.nomComplet,
+        email: user.email,
+        role: user.role,
+        agenceId: user.agenceId,
+      },
+    };
   }
 
   async refresh(token: string) {
